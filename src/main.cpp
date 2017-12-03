@@ -1,5 +1,4 @@
-#define GLFW_INCLUDE_ES3
-#include <GLFW/glfw3.h>
+#include "globals.h"
 
 #include <glm/common.hpp>
 #include <glm/gtx/transform.hpp>
@@ -10,6 +9,7 @@
 #include <chrono>
 #include <thread>
 #include "Blob.h"
+#include "AiBlob.h"
 
 
 // constants
@@ -21,13 +21,6 @@ static const std::string TITLE = "Faerbit's LD40 entry";
 
 static const float PI = 3.14159265358979323846f;
 static const float SCALE = 10.0f;
-
-// game related vars
-
-static std::vector<glm::vec2> circle {};
-
-static std::vector<Blob> blobs { Blob() };
-static Blob& playerBlob = blobs[0];
 
 static const char* vertexShaderSource =
 "uniform mat4 MP;\n"
@@ -43,42 +36,36 @@ static const char* fragmentShaderSource =
 "   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
 "}\n";
 
-static GLint mpLocation = 0;
-static GLint vPosLocation = 0;
-
-static struct KeyState {
-    bool up = false;
-    bool down = false;
-    bool left = false;
-    bool right = false;
-} keyState;
-
 void update() {
-    const float acceleration = 0.035;
-    glm::vec2 accel{0.0, 0.0};
-    if (keyState.up) {
-        accel.y += acceleration;
+    gameWidth = windowWidth/SCALE;
+    gameHeight = windowHeight/SCALE;
+    while(enemyCount < 10) {
+        AiBlob::spawn();
+        ++enemyCount;
     }
-    if (keyState.down) {
-        accel.y -= acceleration;
+    auto blob = blobs.begin();
+    while (blob != blobs.end()) {
+       bool valid = (*blob)->update();
+        if (valid) {
+            ++blob;
+        }
+        else {
+            blobs.erase(blob++);
+            --enemyCount;
+        }
     }
-    if (keyState.left) {
-        accel.x -= acceleration;
-    }
-    if (keyState.right) {
-        accel.x += acceleration;
-    }
-    playerBlob.accel(accel);
-    playerBlob.update();
 }
 
 void render() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glm::mat4 perspective {glm::ortho(-(WIDTH/SCALE), WIDTH/SCALE, -(HEIGHT/SCALE), HEIGHT/SCALE)};
+
+    glm::mat4 perspective{
+            glm::ortho(-gameWidth, gameWidth, -gameHeight, gameHeight)};
+
     for (auto& blob: blobs) {
         glm::mat4 model {
-                glm::translate(glm::vec3(blob.getPos(), 0.0f)) *
-                        glm::scale(glm::vec3(glm::vec2(blob.getSize()), 0.0f))};
+                glm::translate(glm::vec3(blob->getPos(), 0.0f)) *
+                        glm::scale(glm::vec3(glm::vec2(blob->getSize()), 0.0f))};
         glm::mat4 mp {perspective * model};
         glUniformMatrix4fv(mpLocation, 1, GL_FALSE, glm::value_ptr(mp));
         glDrawArrays(GL_TRIANGLES, 0, circle.size());
@@ -178,18 +165,7 @@ void initCircle(int resolution) {
         circle.at((i * 3) + 0) = glm::vec2(0.0f, 0.0f);
         circle.at((i * 3) + 1) = glm::rotate(glm::vec2(1.0f, 0.0f), angle);
         circle.at((i * 3) + 2) = glm::rotate(glm::vec2(1.0f, 0.0f), nextAngle);
-        /*std::cout << angle << " ";
-        std::cout << nextAngle << "\n";
-        std::cout << glm::to_string(circle.at((i*3))) << "\n";
-        std::cout << glm::to_string(circle.at(i*3+1)) << "\n";
-        std::cout << glm::to_string(circle.at(i*3+2)) << "\n";*/
     }
-    //std::cout << circle.size() << "\n";
-    /*circle.push_back(glm::vec2(0.0f, 0.0f));
-    circle.push_back(glm::vec2(0.0f, 1.0f));
-    circle.push_back(glm::vec2(0.75f, 0.75f));
-    circle.push_back(glm::vec2(0.5f, 0.5f));*/
-    //circle.push_back(glm::vec2(-1.0f, 0.0f));
 }
 
 int main()
@@ -201,9 +177,10 @@ int main()
 
     glfwSetErrorCallback(error_callback);
 
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    //glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, TITLE.c_str(),
+    window = glfwCreateWindow(WIDTH, HEIGHT, TITLE.c_str(),
             nullptr, nullptr);
 
     if (!window) {
@@ -251,8 +228,12 @@ int main()
 
     glUseProgram(program);
 
+    blobs.emplace_back(std::make_unique<PlayerBlob>());
+
     while(!glfwWindowShouldClose(window)) {
         auto start = std::chrono::high_resolution_clock::now();
+        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+
         update();
         render();
 

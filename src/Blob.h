@@ -12,13 +12,15 @@ public:
     Blob() : Blob({0.0f, 0.0f,}, 1.0f) {}
     Blob(glm::vec2 pos, float size) : position(pos), size(size) {}
 
-    void accel(const glm::vec2 p);
-    void update();
+    virtual bool update() = 0;
+    void baseUpdate();
     glm::vec2 getPos() { return position; }
 
     float getSize() { return size; }
 
-private:
+protected:
+    glm::vec2 checkBorder(float tolerance);
+
     glm::vec2 force{0.0f, 0.0f};
     glm::vec2 speed{0.0f, 0.0f};
     glm::vec2 position{};

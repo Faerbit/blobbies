@@ -3,27 +3,31 @@
 //
 
 #include "Blob.h"
+#include "globals.h"
 
 #include <glm/geometric.hpp>
 
 static const float MAX_SPEED = 0.5f;
-static const float MAX_ACCEL = 0.25f;
 
-void Blob::accel(const glm::vec2 p) {
-    force += p;
-    if (force.length() > MAX_ACCEL) {
-        glm::normalize(force);
-        force *= MAX_ACCEL;
-    }
+glm::vec2 Blob::checkBorder(float tolerance) {
+    if (position.x + (size - tolerance) > gameWidth)
+        return glm::vec2(1.0, 0.0);
+    if (position.x + (size - tolerance) < -gameWidth)
+        return glm::vec2(-1.0, 0.0);
+    if (position.y + (size - tolerance) > gameHeight)
+        return glm::vec2(0.0, -1.0);
+    if (position.y + (size - tolerance) < -gameHeight)
+        return glm::vec2(0.0, 1.0);
+    return glm::vec2();
 }
 
-void Blob::update() {
+void Blob::baseUpdate() {
     force *= 0.95;
     speed += force;
     if (glm::length(speed) > MAX_SPEED) {
         glm::normalize(speed);
         speed *= MAX_SPEED;
     }
-    speed *= 0.95;
+    speed *= 0.98;
     position += speed;
 }
