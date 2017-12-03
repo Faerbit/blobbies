@@ -10,7 +10,8 @@
 
 class AiBlob : public Blob {
 public:
-    AiBlob(glm::vec2 start, glm::vec2 direction, float size) : Blob(start, size), direction(direction) {}
+    AiBlob(glm::vec2 start, glm::vec2 direction, float size) : Blob(start, size, {1.0, 0.0, 0.0}),
+                                                               direction(direction) {}
 
     virtual bool update() override;
     static void spawn();

@@ -19,7 +19,6 @@ static const int WIDTH = 1360;
 static const int HEIGHT = 768;
 static const std::string TITLE = "Faerbit's LD40 entry";
 
-static const float PI = 3.14159265358979323846f;
 static const float SCALE = 10.0f;
 
 static const char* vertexShaderSource =
@@ -31,10 +30,17 @@ static const char* vertexShaderSource =
 "}\n";
 
 static const char* fragmentShaderSource =
+"uniform vec3 color;"
 "void main()\n"
 "{\n"
-"   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+"   gl_FragColor = vec4(color, 1.0);\n"
 "}\n";
+
+void init() {
+    blobs.clear();
+    blobs.emplace_back(std::make_unique<PlayerBlob>());
+    enemyCount = 0;
+}
 
 void update() {
     gameWidth = windowWidth/SCALE;
@@ -45,7 +51,7 @@ void update() {
     }
     auto blob = blobs.begin();
     while (blob != blobs.end()) {
-       bool valid = (*blob)->update();
+        bool valid = (*blob)->update();
         if (valid) {
             ++blob;
         }
@@ -68,6 +74,7 @@ void render() {
                         glm::scale(glm::vec3(glm::vec2(blob->getSize()), 0.0f))};
         glm::mat4 mp {perspective * model};
         glUniformMatrix4fv(mpLocation, 1, GL_FALSE, glm::value_ptr(mp));
+        glUniform3fv(colorLocation, 1, glm::value_ptr(blob->getColor()));
         glDrawArrays(GL_TRIANGLES, 0, circle.size());
     }
 }
@@ -153,6 +160,9 @@ void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods) 
     if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
         keyState.right = false;
     }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        init();
+    }
 }
 
 void initCircle(int resolution) {
@@ -221,6 +231,7 @@ int main()
     checkGLErrors();
 
     mpLocation = glGetUniformLocation(program, "MP");
+    colorLocation = glGetUniformLocation(program, "color");
     vPosLocation = glGetAttribLocation(program, "vPos");
     glEnableVertexAttribArray(vPosLocation);
     glVertexAttribPointer(vPosLocation, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, nullptr);
@@ -228,19 +239,21 @@ int main()
 
     glUseProgram(program);
 
-    blobs.emplace_back(std::make_unique<PlayerBlob>());
+    init();
 
     while(!glfwWindowShouldClose(window)) {
         auto start = std::chrono::high_resolution_clock::now();
         glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
 
-        update();
+        if((*blobs.front()).getSize() * 0.9 < gameHeight) {
+            update();
+        }
         render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
         auto end = std::chrono::high_resolution_clock::now();
-        std::this_thread::sleep_for(MS_PER_FRAME - (end-start));
+        std::this_thread::sleep_for(MS_PER_FRAME - (end - start));
     }
 
     glfwTerminate();

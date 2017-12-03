@@ -6,16 +6,17 @@
 #define LD40_BLOB_H
 
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 class Blob {
 public:
-    Blob() : Blob({0.0f, 0.0f,}, 1.0f) {}
-    Blob(glm::vec2 pos, float size) : position(pos), size(size) {}
+    Blob() : Blob({0.0f, 0.0f,}, 1.0f, {0.0, 0.0, 1.0}) {}
+    Blob(glm::vec2 pos, float size, glm::vec3 color) : position(pos), size(size), color(color) {}
 
     virtual bool update() = 0;
     void baseUpdate();
-    glm::vec2 getPos() { return position; }
-
+    glm::vec2& getPos() { return position; }
+    glm::vec3& getColor() { return color; }
     float getSize() { return size; }
 
 protected:
@@ -23,6 +24,7 @@ protected:
 
     glm::vec2 force{0.0f, 0.0f};
     glm::vec2 speed{0.0f, 0.0f};
+    glm::vec3 color{0.0, 0.0, 0.0};
     glm::vec2 position{};
     float size{};
 };

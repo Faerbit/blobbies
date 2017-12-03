@@ -10,6 +10,7 @@
 class PlayerBlob : public Blob {
 public:
     virtual bool update() override;
+    void grow(float p) { size += p; }
 };
 
 

@@ -30,7 +30,6 @@ glm::vec2 getRandomBorderPosition(int side) {
 void AiBlob::spawn() {
     std::uniform_int_distribution<> sideDist(0, 3);
     int startSide = sideDist(randomGenerator);
-    std::cout << startSide << "\n";
     int targetSide = -1;
     while ((targetSide = sideDist(randomGenerator)) == startSide) {}
     glm::vec2 start {getRandomBorderPosition(startSide)};
@@ -39,6 +38,15 @@ void AiBlob::spawn() {
 }
 
 bool AiBlob::update() {
+    PlayerBlob& playerBlob = static_cast<PlayerBlob&>(*blobs.front());
+    glm::vec2 toPlayer = playerBlob.getPos() - position;
+    if (glm::length(toPlayer) < size + playerBlob.getSize()) {
+        playerBlob.grow(size *0.5);
+        return false;
+    }
+    if (glm::angle(direction, glm::normalize(toPlayer)) < (PI/10.0)) {
+        direction = glm::normalize(direction + glm::normalize(toPlayer) * 0.1);
+    }
     force = direction * 0.01;
     if (glm::length(checkBorder(2*size))) {
         return false;
