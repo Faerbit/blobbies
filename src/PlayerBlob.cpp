@@ -36,5 +36,27 @@ bool PlayerBlob::update() {
     }
     force = accel;
     baseUpdate();
+    if (size > 2.5) {
+        size *= 0.999;
+    }
     return true;
+}
+
+void PlayerBlob::grow(float p) {
+    size += p;
+    glm::vec2 border = checkBorder(0.0f);
+    if (glm::length(border) > 0.0) {
+        if (border.x > 0) {
+            position.x -= p;
+        }
+        if (border.x < 0) {
+            position.x += p;
+        }
+        if (border.y > 0) {
+            position.y += p;
+        }
+        if (border.y < 0) {
+            position.y -= p;
+        }
+    }
 }

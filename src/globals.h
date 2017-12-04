@@ -14,6 +14,7 @@
 #include <memory>
 #include <random>
 #include <list>
+#include <chrono>
 #include "PlayerBlob.h"
 
 const float PI = 3.14159265358979323846f;
@@ -39,6 +40,9 @@ extern std::random_device randomDevice;
 extern std::mt19937 randomGenerator;
 
 // game related
+extern bool gameRunning;
+extern std::chrono::high_resolution_clock::time_point gameStart;
+
 extern float gameWidth;
 extern float gameHeight;
 

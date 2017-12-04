@@ -34,7 +34,8 @@ void AiBlob::spawn() {
     while ((targetSide = sideDist(randomGenerator)) == startSide) {}
     glm::vec2 start {getRandomBorderPosition(startSide)};
     glm::vec2 target {getRandomBorderPosition(targetSide)};
-    blobs.emplace_back(std::make_unique<AiBlob>(start, glm::normalize(target-start), 1.5f));
+    std::uniform_real_distribution<> sizeDist(1,1.5);
+    blobs.emplace_back(std::make_unique<AiBlob>(start, glm::normalize(target-start), sizeDist(randomGenerator)));
 }
 
 bool AiBlob::update() {
@@ -44,7 +45,8 @@ bool AiBlob::update() {
         playerBlob.grow(size *0.5);
         return false;
     }
-    if (glm::angle(direction, glm::normalize(toPlayer)) < (PI/10.0)) {
+    if (glm::angle(direction, glm::normalize(toPlayer)) < (PI/2.0)) {
+    //if (glm::angle(direction, glm::normalize(toPlayer)) < (PI/10.0)) {
         direction = glm::normalize(direction + glm::normalize(toPlayer) * 0.1);
     }
     force = direction * 0.01;

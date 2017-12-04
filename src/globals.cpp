@@ -25,6 +25,9 @@ std::vector<glm::vec2> circle {};
 std::random_device randomDevice{};
 std::mt19937 randomGenerator{randomDevice()};
 
+bool gameRunning{true};
+std::chrono::high_resolution_clock::time_point gameStart{};
+
 float gameWidth{0.0f};
 float gameHeight{10.0f};
 

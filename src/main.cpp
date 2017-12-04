@@ -8,6 +8,8 @@
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <sstream>
+#include <iomanip>
 #include "Blob.h"
 #include "AiBlob.h"
 
@@ -89,6 +91,8 @@ void checkShader(GLuint shader) {
 }
 
 void init() {
+    gameRunning = true;
+    gameStart = std::chrono::high_resolution_clock::now();
     blobs.clear();
     blobs.emplace_back(std::make_unique<PlayerBlob>());
     enemyCount = 0;
@@ -382,6 +386,8 @@ int main()
 
     init();
 
+    std::chrono::nanoseconds gameLength;
+
     while(!glfwWindowShouldClose(window)) {
         auto start = std::chrono::high_resolution_clock::now();
         glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
@@ -389,16 +395,26 @@ int main()
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if((*blobs.front()).getSize() * 9 < gameHeight) {
+        glUseProgram(defaultProgram);
+        render();
+
+        if((*blobs.front()).getSize() * 0.9 < gameHeight) {
             update();
         }
         else {
+            if (gameRunning) {
+                gameRunning = false;
+                gameLength = std::chrono::high_resolution_clock::now() - gameStart;
+            }
             glUseProgram(textProgram);
-            renderText("You lasted for: ");
-            //renderText("more stuff", 1);
+            std::ostringstream msg;
+            msg << "You lasted for: ";
+            int secs = std::chrono::duration_cast<std::chrono::seconds>(gameLength).count();
+            int mins = secs / 60;
+            msg << mins << ":" << std::setfill('0') << std::setw(2) << secs%60;
+            renderText(msg.str());
+            renderText("Press \"R\" to restart", 1);
         }
-        glUseProgram(defaultProgram);
-        render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
