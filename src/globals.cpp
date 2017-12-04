@@ -4,13 +4,21 @@
 
 #include "globals.h"
 
+
 GLFWwindow* window{nullptr};
 int windowWidth{0};
 int windowHeight{0};
 
+FT_Library ftLibrary;
+FT_Face ftFace;
+
+GLuint circleVbo{0};
+GLuint textVbo{0};
+
 GLint mpLocation{0};
 GLint vPosLocation{0};
 GLint colorLocation{0};
+GLint textCoordLocation{0};
 
 std::vector<glm::vec2> circle {};
 

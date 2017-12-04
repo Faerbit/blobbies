@@ -7,6 +7,8 @@
 
 #define GLFW_INCLUDE_ES3
 #include <GLFW/glfw3.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <glm/vec2.hpp>
 #include <vector>
 #include <memory>
@@ -20,9 +22,16 @@ extern GLFWwindow* window;
 extern int windowWidth;
 extern int windowHeight;
 
+extern FT_Library ftLibrary;
+extern FT_Face ftFace;
+
+extern GLuint circleVbo;
+extern GLuint textVbo;
+
 extern GLint mpLocation;
 extern GLint vPosLocation;
 extern GLint colorLocation;
+extern GLint textCoordLocation;
 
 extern std::vector<glm::vec2> circle;
 
