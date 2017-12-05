@@ -45,6 +45,7 @@ extern const glm::vec3 FRIEND_COLOR;
 extern const glm::vec3 ENEMY_COLOR;
 
 // game related
+extern bool gameIntro;
 extern bool gameRunning;
 extern std::chrono::high_resolution_clock::time_point gameStart;
 

@@ -92,6 +92,7 @@ void checkShader(GLuint shader) {
 }
 
 void init() {
+    gameIntro = true;
     gameRunning = true;
     gameStart = std::chrono::high_resolution_clock::now();
     blobs.clear();
@@ -142,13 +143,7 @@ void renderText(const std::string& text, int line = 0) {
     float sx = 2.0 / windowWidth;
     float sy = 2.0 / windowHeight;
     float x = (-(text.length()/53.0)) + 8 * sx;
-    float y;
-    if (line == 0) {
-        y = 50 * sy;
-    }
-    else {
-        y = -50 * sy;
-    }
+    float y = -line * 60 * sy;
     glBindBuffer(GL_ARRAY_BUFFER, textVbo);
     glEnableVertexAttribArray(textCoordLocation);
     glVertexAttribPointer(textCoordLocation, 4, GL_FLOAT, GL_FALSE, 0, 0);
@@ -250,6 +245,9 @@ void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods) 
     }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         init();
+    }
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        gameIntro = false;
     }
 }
 
@@ -386,6 +384,15 @@ int main()
 
     init();
 
+    // === REALLY dirty last minute hacks ===
+    glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+    glUseProgram(defaultProgram);
+    render();
+    update();
+    init();
+
+    // === please NEVER do something like this ===
+
     std::chrono::nanoseconds gameLength;
 
     while(!glfwWindowShouldClose(window)) {
@@ -397,23 +404,29 @@ int main()
 
         glUseProgram(defaultProgram);
         render();
-
-        if((*blobs.front()).getSize() * MAX_SIZE < gameHeight) {
-            update();
+        glUseProgram(textProgram);
+        if (gameIntro) {
+            renderText("bloBBies", -1);
+            renderText("Evade the orange blobbies!", 1);
+            renderText("Control with WASD or the arrow keys", 2);
+            renderText("Press Space to start, Esc to exit", 3);
         }
         else {
-            if (gameRunning) {
-                gameRunning = false;
-                gameLength = std::chrono::high_resolution_clock::now() - gameStart;
+            if ((*blobs.front()).getSize() * MAX_SIZE < gameHeight) {
+                update();
+            } else {
+                if (gameRunning) {
+                    gameRunning = false;
+                    gameLength = std::chrono::high_resolution_clock::now() - gameStart;
+                }
+                std::ostringstream msg;
+                msg << "You lasted for: ";
+                int secs = std::chrono::duration_cast<std::chrono::seconds>(gameLength).count();
+                int mins = secs / 60;
+                msg << mins << ":" << std::setfill('0') << std::setw(2) << secs % 60;
+                renderText(msg.str());
+                renderText("Press \"R\" to restart", 1);
             }
-            glUseProgram(textProgram);
-            std::ostringstream msg;
-            msg << "You lasted for: ";
-            int secs = std::chrono::duration_cast<std::chrono::seconds>(gameLength).count();
-            int mins = secs / 60;
-            msg << mins << ":" << std::setfill('0') << std::setw(2) << secs%60;
-            renderText(msg.str());
-            renderText("Press \"R\" to restart", 1);
         }
 
         glfwSwapBuffers(window);

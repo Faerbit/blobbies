@@ -30,7 +30,8 @@ std::mt19937 randomGenerator{randomDevice()};
 const glm::vec3 FRIEND_COLOR{13/255.0, 7/255.0, 196/255.0};
 const glm::vec3 ENEMY_COLOR{200/255.0, 30/255.0, 7/255.0};
 
-bool gameRunning{true};
+bool gameIntro{true};
+bool gameRunning{false};
 std::chrono::high_resolution_clock::time_point gameStart{};
 
 float gameWidth{0.0f};
