@@ -10,7 +10,7 @@
 
 class AiBlob : public Blob {
 public:
-    AiBlob(glm::vec2 start, glm::vec2 direction, float size) : Blob(start, size, {1.0, 0.0, 0.0}),
+    AiBlob(glm::vec2 start, glm::vec2 direction, float size) : Blob(start, size, ENEMY_COLOR),
                                                                direction(direction) {}
 
     virtual bool update() override;

@@ -15,7 +15,9 @@
 #include <random>
 #include <list>
 #include <chrono>
-#include "PlayerBlob.h"
+
+// forward declaration
+class Blob;
 
 const float PI = 3.14159265358979323846f;
 
@@ -39,9 +41,15 @@ extern std::vector<glm::vec2> circle;
 extern std::random_device randomDevice;
 extern std::mt19937 randomGenerator;
 
+extern const glm::vec3 FRIEND_COLOR;
+extern const glm::vec3 ENEMY_COLOR;
+
 // game related
 extern bool gameRunning;
 extern std::chrono::high_resolution_clock::time_point gameStart;
+
+const float MAX_SIZE = 1.1;
+const int MAX_ENEMY_COUNT = 20;
 
 extern float gameWidth;
 extern float gameHeight;
@@ -49,7 +57,7 @@ extern float gameHeight;
 extern int enemyCount;
 
 extern std::list<std::unique_ptr<Blob>> blobs;
-extern PlayerBlob& playerBlob;
+//extern PlayerBlob& playerBlob;
 
 extern struct KeyState {
     bool up = false;

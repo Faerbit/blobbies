@@ -5,7 +5,7 @@
 #include <iostream>
 #include <glm/ext.hpp>
 #include "AiBlob.h"
-#include "globals.h"
+#include "PlayerBlob.h"
 
 glm::vec2 getRandomBorderPosition(int side) {
     if (side == 0) {

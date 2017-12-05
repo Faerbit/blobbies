@@ -12,14 +12,15 @@
 #include <iomanip>
 #include "Blob.h"
 #include "AiBlob.h"
+#include "PlayerBlob.h"
 
 
 // constants
 static const std::chrono::duration<double, std::milli> MS_PER_FRAME {1.0/60.0};
-static const int CIRCLE_RESOLUTION = 30;
+static const int CIRCLE_RESOLUTION = 50;
 static const int WIDTH = 1360;
 static const int HEIGHT = 768;
-static const std::string TITLE = "Faerbit's LD40 entry";
+static const std::string TITLE = "Faerbit's LD40 entry: bloBBies";
 static const std::string FONT = "NotoSans-Black.ttf";
 
 static const float SCALE = 10.0f;
@@ -101,7 +102,7 @@ void init() {
 void update() {
     gameWidth = windowWidth/SCALE;
     gameHeight = windowHeight/SCALE;
-    while(enemyCount < 10) {
+    while(enemyCount < MAX_ENEMY_COUNT) {
         AiBlob::spawn();
         ++enemyCount;
     }
@@ -137,7 +138,6 @@ void render() {
 }
 
 
-//void renderText(const std::string& text, float x, float y, float sx, float sy) {
 void renderText(const std::string& text, int line = 0) {
     float sx = 2.0 / windowWidth;
     float sy = 2.0 / windowHeight;
@@ -398,7 +398,7 @@ int main()
         glUseProgram(defaultProgram);
         render();
 
-        if((*blobs.front()).getSize() * 0.9 < gameHeight) {
+        if((*blobs.front()).getSize() * MAX_SIZE < gameHeight) {
             update();
         }
         else {

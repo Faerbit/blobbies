@@ -7,10 +7,11 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include "globals.h"
 
 class Blob {
 public:
-    Blob() : Blob({0.0f, 0.0f,}, 1.0f, {0.0, 0.0, 1.0}) {}
+    Blob() : Blob({0.0f, 0.0f,}, 1.0f, FRIEND_COLOR) {}
     Blob(glm::vec2 pos, float size, glm::vec3 color) : position(pos), size(size), color(color) {}
 
     virtual bool update() = 0;

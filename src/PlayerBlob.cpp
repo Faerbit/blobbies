@@ -35,10 +35,11 @@ bool PlayerBlob::update() {
         }
     }
     force = accel;
-    baseUpdate();
     if (size > 2.5) {
         size *= 0.999;
     }
+    color = glm::mix(FRIEND_COLOR, ENEMY_COLOR, size/(gameHeight*MAX_SIZE));
+    baseUpdate();
     return true;
 }
 
