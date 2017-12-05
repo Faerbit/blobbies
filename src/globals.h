@@ -49,7 +49,7 @@ extern bool gameRunning;
 extern std::chrono::high_resolution_clock::time_point gameStart;
 
 const float MAX_SIZE = 1.1;
-const int MAX_ENEMY_COUNT = 20;
+const int MAX_ENEMY_COUNT = 30;
 
 extern float gameWidth;
 extern float gameHeight;

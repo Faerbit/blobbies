@@ -36,7 +36,7 @@ bool PlayerBlob::update() {
     }
     force = accel;
     if (size > 2.5) {
-        size *= 0.999;
+        size *= 0.9992;
     }
     color = glm::mix(FRIEND_COLOR, ENEMY_COLOR, size/(gameHeight*MAX_SIZE));
     baseUpdate();

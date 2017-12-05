@@ -7,7 +7,7 @@
 
 #include <glm/geometric.hpp>
 
-static const float MAX_SPEED = 0.5f;
+static const float MAX_SPEED = 0.6f;
 
 glm::vec2 Blob::checkBorder(float tolerance) {
     if (position.x + (size - tolerance) > gameWidth)
