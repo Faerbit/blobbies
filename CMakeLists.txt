@@ -15,6 +15,7 @@ add_executable(blobbies ${SRC}
 set_property(TARGET blobbies PROPERTY CXX_STANDARD 14)
 
 target_include_directories(blobbies PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
         ${GLM_INCLUDE_DIRS}
         ${GLFW_INCLUDE_DIRS}
         ${FREETYPE_INCLUDE_DIR_freetype2}
@@ -26,4 +27,6 @@ target_link_libraries(blobbies
         ${FREETYPE_LIBRARY_RELEASE}
 )
 
-file(COPY "font/NotoSans-Black.ttf" DESTINATION ".")
+execute_process(COMMAND xxd -i NotoSans-Black.ttf
+        OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/font.h"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/font")

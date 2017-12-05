@@ -13,6 +13,7 @@
 #include "Blob.h"
 #include "AiBlob.h"
 #include "PlayerBlob.h"
+#include "font.h"
 
 
 // constants
@@ -291,8 +292,8 @@ int main()
         return EXIT_FAILURE;
     }
 
-    if (FT_New_Face(ftLibrary, FONT.c_str(), 0, &ftFace)) {
-        std::cerr << "Cannot open font \"" << FONT << "\"\n";
+    if (FT_New_Memory_Face(ftLibrary, NotoSans_Black_ttf, NotoSans_Black_ttf_len, 0, &ftFace)) {
+        std::cerr << "Error loading font\n";
         return EXIT_FAILURE;
     }
 
