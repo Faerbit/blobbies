@@ -2,6 +2,7 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 
@@ -163,11 +164,11 @@ void renderText(const std::string& text, int line = 0) {
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_RED,
+                GL_ALPHA,
                 g->bitmap.width,
                 g->bitmap.rows,
                 0,
-                GL_RED,
+                GL_ALPHA,
                 GL_UNSIGNED_BYTE,
                 g->bitmap.buffer
         );
@@ -287,9 +288,13 @@ GLuint compileShader(const GLenum shaderType, const std::string& src) {
 }
 
 void gameLoop() {
+#ifdef __EMSCRIPTEN__
+    emscripten_get_canvas_element_size("#canvas", &windowWidth, &windowHeight);
+#else
     glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+#endif
 
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(defaultProgram);
@@ -335,8 +340,14 @@ int main()
     //glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwWindowHint(GLFW_SAMPLES, 4);
 
+#ifdef __EMSCRIPTEN__
+    emscripten_get_canvas_element_size("#canvas", &windowWidth, &windowHeight);
+    window = glfwCreateWindow(windowWidth, windowHeight, TITLE.c_str(),
+                              nullptr, nullptr);
+#else
     window = glfwCreateWindow(WIDTH, HEIGHT, TITLE.c_str(),
             nullptr, nullptr);
+#endif
 
     if (!window) {
         std::cerr << "Failed to create window!\n";
@@ -356,6 +367,19 @@ int main()
     }
 
     FT_Set_Pixel_Sizes(ftFace, 0, 48);
+
+#ifdef __EMSCRIPTEN__
+    int result = emscripten_webgl_enable_extension(emscripten_webgl_get_current_context(), "OES_texture_float");
+    if (result < 0) {
+        std::cerr << "Could not load extension \"OES_texture_float\"\n";
+        emscripten_run_script("alert('Could not load extension \"OES_texture_float\". Game will not work.')");
+    }
+    result = emscripten_webgl_enable_extension(emscripten_webgl_get_current_context(), "OES_texture_float_linear");
+    if (result < 0) {
+        std::cerr << "Could not load extension \"OES_texture_float_linear\"\n";
+        emscripten_run_script("alert('Could not load extension \"OES_texture_float_linear\". Game will not work.')");
+    }
+#endif
 
     initCircle(CIRCLE_RESOLUTION);
 
@@ -426,7 +450,11 @@ int main()
     init();
 
     // === REALLY dirty last minute hacks ===
+#ifdef __EMSCRIPTEN__
+    emscripten_get_canvas_element_size("#canvas", &windowWidth, &windowHeight);
+#else
     glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+#endif
     glUseProgram(defaultProgram);
     render();
     update();
@@ -443,8 +471,8 @@ int main()
         auto end = std::chrono::high_resolution_clock::now();
         std::this_thread::sleep_for(MS_PER_FRAME - (end - start));
     }
-#endif
 
     glfwTerminate();
     return EXIT_SUCCESS;
+#endif
 }
