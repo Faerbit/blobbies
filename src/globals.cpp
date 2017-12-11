@@ -22,6 +22,11 @@ GLint vPosLocation{0};
 GLint colorLocation{0};
 GLint textCoordLocation{0};
 
+GLuint defaultProgram{0};
+GLuint textProgram{0};
+
+std::chrono::nanoseconds gameLength{};
+
 std::vector<glm::vec2> circle {};
 
 std::random_device randomDevice{};

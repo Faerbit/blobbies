@@ -28,6 +28,11 @@ extern int windowHeight;
 extern FT_Library ftLibrary;
 extern FT_Face ftFace;
 
+extern GLuint defaultProgram;
+extern GLuint textProgram;
+
+extern std::chrono::nanoseconds gameLength;
+
 extern GLuint circleVbo;
 extern GLuint textVbo;
 

@@ -1,5 +1,10 @@
 #include "globals.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+
 #include <glm/common.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/ext.hpp>
@@ -26,19 +31,19 @@ static const std::string FONT = "NotoSans-Black.ttf";
 
 static const float SCALE = 10.0f;
 
-static const char* vertexDefaultShaderSource =
+static const std::string vertexDefaultShaderSource =
 #include "default.vert"
 ;
 
-static const char* fragmentDefaultShaderSource =
+static const std::string fragmentDefaultShaderSource =
 #include "default.frag"
 ;
 
-static const char* vertexTextShaderSource =
+static const std::string vertexTextShaderSource =
 #include "text.vert"
 ;
 
-static const char* fragmentTextShaderSource =
+static const std::string fragmentTextShaderSource =
 #include "text.frag"
 ;
 
@@ -265,6 +270,59 @@ void initCircle(int resolution) {
     }
 }
 
+GLuint compileShader(const GLenum shaderType, const std::string& src) {
+    GLuint handle = glCreateShader(shaderType);
+#ifdef __EMSCRIPTEN__
+    const std::string shaderPrefix("precision mediump float;\n");
+#else
+    const std::string shaderPrefix("");
+#endif
+    const std::string shaderStr = shaderPrefix + src;
+    const char* shaderSrc = shaderStr.c_str();
+    glShaderSource(handle, 1, &shaderSrc, nullptr);
+    glCompileShader(handle);
+    checkShader(handle);
+    checkGLErrors("after compiling shader" + std::to_string(shaderType));
+    return handle;
+}
+
+void gameLoop() {
+    glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(defaultProgram);
+    render();
+    glUseProgram(textProgram);
+    if (gameIntro) {
+        renderText("bloBBies", -1);
+        renderText("Evade the orange blobbies!", 1);
+        renderText("Control with WASD or the arrow keys", 2);
+        renderText("Press Space to start, Esc to exit", 3);
+    }
+    else {
+        if ((*blobs.front()).getSize() * MAX_SIZE < gameHeight) {
+            update();
+        } else {
+            if (gameRunning) {
+                gameRunning = false;
+                gameLength = std::chrono::high_resolution_clock::now() - gameStart;
+            }
+            std::ostringstream msg;
+            msg << "You lasted for: ";
+            int secs = std::chrono::duration_cast<std::chrono::seconds>(gameLength).count();
+            int mins = secs / 60;
+            msg << mins << ":" << std::setfill('0') << std::setw(2) << secs % 60;
+            renderText(msg.str());
+            renderText("Press \"R\" to restart", 1);
+        }
+    }
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
 int main()
 {
     if (!glfwInit()) {
@@ -313,19 +371,10 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(circle)*circle.size(), &circle[0], GL_STATIC_DRAW);
     checkGLErrors();
 
-    GLuint vertexDefaultShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexDefaultShader, 1, &vertexDefaultShaderSource, nullptr);
-    glCompileShader(vertexDefaultShader);
-    checkShader(vertexDefaultShader);
-    checkGLErrors();
+    GLuint vertexDefaultShader = compileShader(GL_VERTEX_SHADER, vertexDefaultShaderSource);
+    GLuint fragmentDefaultShader = compileShader(GL_FRAGMENT_SHADER, fragmentDefaultShaderSource);
 
-    GLuint fragmentDefaultShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentDefaultShader, 1, &fragmentDefaultShaderSource, nullptr);
-    glCompileShader(fragmentDefaultShader);
-    checkShader(fragmentDefaultShader);
-    checkGLErrors();
-
-    GLuint defaultProgram = glCreateProgram();
+    defaultProgram = glCreateProgram();
     glAttachShader(defaultProgram, vertexDefaultShader);
     glAttachShader(defaultProgram, fragmentDefaultShader);
     glLinkProgram(defaultProgram);
@@ -336,19 +385,10 @@ int main()
     vPosLocation = glGetAttribLocation(defaultProgram, "vPos");
     checkGLErrors();
 
-    GLuint vertexTextShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexTextShader, 1, &vertexTextShaderSource, nullptr);
-    glCompileShader(vertexTextShader);
-    checkShader(vertexTextShader);
-    checkGLErrors();
+    GLuint vertexTextShader = compileShader(GL_VERTEX_SHADER, vertexTextShaderSource);
+    GLuint fragmentTextShader = compileShader(GL_FRAGMENT_SHADER, fragmentTextShaderSource);
 
-    GLuint fragmentTextShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentTextShader, 1, &fragmentTextShaderSource, nullptr);
-    glCompileShader(fragmentTextShader);
-    checkShader(fragmentTextShader);
-    checkGLErrors();
-
-    GLuint textProgram = glCreateProgram();
+    textProgram = glCreateProgram();
     glAttachShader(textProgram, vertexTextShader);
     glAttachShader(textProgram, fragmentTextShader);
     glLinkProgram(textProgram);
@@ -394,47 +434,16 @@ int main()
 
     // === please NEVER do something like this ===
 
-    std::chrono::nanoseconds gameLength;
-
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(gameLoop, 60, false);
+#else
     while(!glfwWindowShouldClose(window)) {
         auto start = std::chrono::high_resolution_clock::now();
-        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(defaultProgram);
-        render();
-        glUseProgram(textProgram);
-        if (gameIntro) {
-            renderText("bloBBies", -1);
-            renderText("Evade the orange blobbies!", 1);
-            renderText("Control with WASD or the arrow keys", 2);
-            renderText("Press Space to start, Esc to exit", 3);
-        }
-        else {
-            if ((*blobs.front()).getSize() * MAX_SIZE < gameHeight) {
-                update();
-            } else {
-                if (gameRunning) {
-                    gameRunning = false;
-                    gameLength = std::chrono::high_resolution_clock::now() - gameStart;
-                }
-                std::ostringstream msg;
-                msg << "You lasted for: ";
-                int secs = std::chrono::duration_cast<std::chrono::seconds>(gameLength).count();
-                int mins = secs / 60;
-                msg << mins << ":" << std::setfill('0') << std::setw(2) << secs % 60;
-                renderText(msg.str());
-                renderText("Press \"R\" to restart", 1);
-            }
-        }
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        gameLoop();
         auto end = std::chrono::high_resolution_clock::now();
         std::this_thread::sleep_for(MS_PER_FRAME - (end - start));
     }
+#endif
 
     glfwTerminate();
     return EXIT_SUCCESS;
