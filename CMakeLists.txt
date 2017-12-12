@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.1)
 project(blobbies)
 
 find_package(OpenGL REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GLM REQUIRED glm)
 if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten")
-    find_package(PkgConfig REQUIRED)
     pkg_search_module(GLFW REQUIRED glfw3)
-    pkg_search_module(GLM REQUIRED glm)
     pkg_search_module(FREETYPE REQUIRED freetype2)
 endif()
 
